@@ -178,7 +178,7 @@ completePasswordReset: async (newPassword) => {
    * Sign up with Google
    * @param {string} [redirectTo='/home'] - Redirect URL after auth
    * @returns {Promise<Object>} Auth data
-   * @throws {Error} If Google signup fails
+   * @throws {Error} If Google signup failss
    */
   signUpWithGoogle: async (redirectTo = '/home') => {
     try {
