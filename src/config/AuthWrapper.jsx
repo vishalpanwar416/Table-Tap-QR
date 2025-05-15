@@ -14,6 +14,12 @@ export default function AuthWrapper({ children, publicOnly = false }) {
     const checkAuthAndProfile = async () => {
       if (authLoading) return;
 
+      if (location.pathname === '/' && user) {
+        navigate('/home');
+        return;
+      }
+    
+
       // Public-only route handling
       if (publicOnly) {
         if (user) {

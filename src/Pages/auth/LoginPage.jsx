@@ -17,9 +17,17 @@ export default function LoginPage() {
     const checkSession = async () => {
       try {
         const user = await authService.getCurrentUser();
-        if (user) navigate('/home');
+        if (user) {
+          // Check if we're already on home page
+          if (window.location.pathname !== '/home') {
+            navigate('/home');
+          }
+        }
       } catch (err) {
-        // User not logged in, stay on login page
+        // Only redirect to home if we have a valid session
+        if (window.location.pathname === '/home') {
+          navigate('/login');
+        }
       }
     };
     checkSession();

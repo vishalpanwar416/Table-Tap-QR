@@ -13,6 +13,11 @@ export const AuthProvider = ({ children }) => {
       const { data: { session } } = await supabase.auth.getSession();
       setUser(session?.user ?? null);
       setLoading(false);
+
+       // Add automatic home redirect when session exists
+    if (session?.user && window.location.pathname === '/') {
+      window.location.href = '/home';
+    }
     };
 
     getSession();
@@ -20,6 +25,11 @@ export const AuthProvider = ({ children }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       setLoading(false);
+
+      // Handle post-login redirect
+    if (_event === 'SIGNED_IN' && window.location.pathname === '/') {
+      window.location.href = '/home';
+    }
     });
 
     return () => subscription?.unsubscribe();
