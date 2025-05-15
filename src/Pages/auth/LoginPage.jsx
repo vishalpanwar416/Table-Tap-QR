@@ -62,12 +62,13 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="bg-black min-h-screen flex flex-col items-center overflow-hidden font-spartan-medium">
+    <div className="flex justify-center items-start min-h-screen bg-black">
+        <div className="w-full max-w-[390px] md:max-w-4xl lg:max-w-6xl h-screen flex flex-col">
       {/* Header */}
       <div className="w-full px-6 py-8 relative flex justify-center">
         <button
           className="absolute left-4 top-8 text-orange-500"
-          onClick={() => navigate('/')}
+          onClick={() => navigate(-1)}
         >
           <ArrowLeft size={30} />
         </button>
@@ -75,7 +76,7 @@ export default function LoginPage() {
       </div>
 
       {/* Login Container */}
-      <div className="bg-gray-200 w-full flex-1 rounded-t-3xl px-6 pt-10 pb-6 flex flex-col font-spartan max-w-[390px] md:max-w-4xl lg:max-w-6xl">
+      <div className="bg-gray-200 w-full flex-1 rounded-t-3xl px-6 pt-10 pb-6 flex flex-col font-spartan">
         <h2 className="justify-center text-center text-black text-3xl font-semibold mb-12">Welcome</h2>
 
         {error && <div className="mb-4 text-red-500 text-center">{error}</div>}
@@ -153,6 +154,7 @@ export default function LoginPage() {
           </p>
         </div>
       </div>
+    </div>
     </div>
   );
 }

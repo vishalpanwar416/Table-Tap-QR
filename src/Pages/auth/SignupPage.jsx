@@ -146,7 +146,7 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="flex justify-center items-start min-h-screen bg-black p-4">
+    <div className="flex justify-center items-start min-h-screen bg-black">
       <div className="w-full max-w-[390px] md:max-w-4xl lg:max-w-6xl h-screen flex flex-col">
       {/* Header */}
       <div className="w-full px-6 py-8 relative flex justify-center">
@@ -156,7 +156,7 @@ export default function SignUpPage() {
         >
           <ArrowLeft size={30} />
         </button>
-        <h1 className="text-white text-2xl font-bold">Create New Account</h1>
+        <h1 className="text-white text-2xl font-medium font-spartan">Create New Account</h1>
       </div>
       
       {/* Form Container */}
@@ -170,21 +170,21 @@ export default function SignUpPage() {
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Full Name */}
           <div>
-            <label className="block text-black mb-2 font-medium">Full Name</label>
+            <label className="block text-black mb-2 font-medium font-spartan">Full Name</label>
             <input
               type="text"
               name="fullName"
               value={formData.fullName}
               onChange={handleChange}
               placeholder="Enter your full name"
-              className="w-full px-4 py-3 rounded-xl bg-white text-black"
+              className="w-full px-4 py-3 rounded-xl bg-white text-black font-spartan"
               required
             />
           </div>
           
           {/* Password */}
           <div>
-            <label className="block text-black mb-2 font-medium">Password</label>
+            <label className="block text-black mb-2 font-medium font-spartan  ">Password</label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
@@ -192,7 +192,7 @@ export default function SignUpPage() {
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="Create a strong password"
-                className="w-full px-4 py-3 rounded-xl bg-white text-black pr-12"
+                className="w-full px-4 py-3 rounded-xl bg-white text-black pr-12 font-spartan"
                 minLength="6"
                 required
               />
@@ -206,7 +206,7 @@ export default function SignUpPage() {
             </div>
           </div>
           <div>
-          <label className="block text-black mb-2 font-medium">Confirm Password</label>
+          <label className="block text-black mb-2 font-medium font-spartan">Confirm Password</label>
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
@@ -214,7 +214,7 @@ export default function SignUpPage() {
               value={formData.confirmPassword}
               onChange={handleChange}
               placeholder="Confirm your password"
-              className="w-full px-4 py-3 rounded-xl bg-white text-black pr-12"
+              className="w-full px-4 py-3 rounded-xl bg-white text-black pr-12 font-spartan"
               minLength="6"
               required
             />
@@ -230,21 +230,21 @@ export default function SignUpPage() {
 
           {/* Email */}
           <div>
-            <label className="block text-black mb-2 font-medium">Email</label>
+            <label className="block text-black mb-2 font-medium font-spartan">Email</label>
             <input
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
               placeholder="example@domain.com"
-              className="w-full px-4 py-3 rounded-xl bg-white text-black"
+              className="w-full px-4 py-3 rounded-xl bg-white text-black font-spartan"
               required
             />
           </div>
           
           {/* Mobile Number */}
           <div className="mb-4">
-            <label className="block text-black mb-2 font-medium">Mobile Number</label>
+            <label className="block text-black mb-2 font-medium font-spartan">Mobile Number</label>
             <div className="relative">
               <input
                 type="tel"
@@ -252,7 +252,7 @@ export default function SignUpPage() {
                 value={formData.mobileNumber}
                 onChange={handleChange}
                 placeholder="+91 98765 43210"
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-colors"
+                className="w-full px-4 py-3 rounded-xl border-2 border-gray-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none transition-colors font-spartan"
                 required
               />
             </div>
@@ -260,31 +260,31 @@ export default function SignUpPage() {
           
           {/* Date of Birth */}
           <div>
-            <label className="block text-black mb-2 font-medium">Date of Birth</label>
+            <label className="block text-black mb-2 font-medium font-spartan">Date of Birth</label>
             <input
               type="date"
               name="dateOfBirth"
               value={formData.dateOfBirth}
               onChange={handleChange}
-              className="w-full px-4 py-3 rounded-xl bg-white text-black"
+              className="w-full px-4 py-3 rounded-xl bg-white text-black font-spartan "
               required
             />
           </div>
           
           {/* Terms Agreement */}
           <div className="text-center mt-4 text-sm">
-            <p className="text-gray-600">
+            <p className="text-gray-600 font-spartan">
               By continuing, you agree to our{' '}
               <Link 
                 to="/terms" 
-                className="text-red-500 font-medium hover:underline"
+                className="text-red-500 font-medium hover:underline font-spartan"
               >
                 Terms of Service
               </Link>{' '}
               and{' '}
               <Link 
                 to="/privacy" 
-                className="text-red-500 font-medium hover:underline"
+                className="text-red-500 font-medium hover:underline font-spartan"
               >
                 Privacy Policy
               </Link>
@@ -303,7 +303,7 @@ export default function SignUpPage() {
         
         {/* Google Sign-In */}
         <div className="mt-6 text-center">
-          <p className="text-gray-600 text-sm mb-4">or continue with</p>
+          <p className="text-gray-600 text-sm mb-4 font-spartan">or continue with</p>
           <GoogleButton 
             onClick={handleGoogleSignup} 
             loading={loading}
@@ -313,11 +313,11 @@ export default function SignUpPage() {
         
         {/* Login Link */}
         <div className="mt-6 text-center">
-          <p className="text-black text-sm">
+          <p className="text-black text-sm font-spartan">
             Already have an account?{' '}
             <Link 
               to="/login" 
-              className="text-red-500 font-medium hover:underline"
+              className="text-red-500 font-medium hover:underline font-spartan"
             >
               Login here
             </Link>

@@ -5,7 +5,7 @@ import { useAdminNotifications } from '../../context/AdminNotificationContext';
 
 const OrderManagement = ({ orders, updateOrderStatus }) => {
   const { createNotification } = useAdminNotifications();
-  const [viewType, setViewType] = useState('tiles'); // 'tiles' or 'table'
+  const [viewType, setViewType] = useState('tiles');
   const [statusFilter, setStatusFilter] = useState('all');
   const [expandedOrderId, setExpandedOrderId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
