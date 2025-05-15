@@ -151,7 +151,7 @@ export default function SignUpPage() {
       {/* Header */}
       <div className="w-full px-6 py-8 relative flex justify-center">
         <button 
-          onClick={() => navigate('/')}
+          onClick={() => navigate(-1)}
           className="absolute left-4 top-8 text-orange-500"
         >
           <ArrowLeft size={30} />
