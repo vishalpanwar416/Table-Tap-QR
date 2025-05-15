@@ -188,39 +188,42 @@ const AdminDashboard = () => {
     let loadingTimeout;
     try {
       setLoading(true);
-      console.log(`Updating order ${orderId} to status: ${status}`);
       
-      // Set a timeout to force loading to false after 10 seconds
       loadingTimeout = setTimeout(() => {
         setLoading(false);
         setErrorMsg('Update request took too long. Please try again.');
       }, 10000);
       
-      // Use the imported service instead of direct supabase call
-      await updateOrderStatusService(orderId, status);
+      // Update order status and get updated order data
+      const updatedOrder = await updateOrderStatusService(orderId, status);
       
-      // Refresh orders after update
-      const { data: updatedOrders, error: fetchError } = await supabase
-        .from('orders')
-        .select('*')
-        .order('created_at', { ascending: false });
-        
-      if (fetchError) throw fetchError;
+      // Optimistically update local state
+      setOrders(prevOrders => 
+        prevOrders.map(order => 
+          order.id === orderId ? { ...order, status: updatedOrder.status } : order
+        )
+      );
       
-      setOrders(updatedOrders || []);
       setSuccessMsg(`Order status updated to ${status}`);
       
-      const { error: notifError } = await supabase
-        .from('notifications')
-        .insert({
-          order_id: orderId,
-          title: `Order ${status}`,
-          message: `Your order #${orderId.slice(0,8)} has been ${status}`,
-          user_id: orders.find(o => o.id === orderId)?.user_id,
-          type: `order_${status}`
-        });
-
-      if (notifError) console.error('Notification error:', notifError);
+      // Create notification (handle separately)
+      try {
+        const order = orders.find(o => o.id === orderId);
+        if (order?.user_id) {
+          await supabase
+            .from('notifications')
+            .insert({
+              order_id: orderId,
+              title: `Order ${status}`,
+              message: `Your order #${orderId.slice(0,8)} has been ${status}`,
+              user_id: order.user_id,
+              type: `order_${status}`
+            });
+        }
+      } catch (notifError) {
+        console.error('Notification error:', notifError);
+      }
+  
     } catch (error) {
       console.error("Error updating order:", error);
       setErrorMsg('Failed to update order status: ' + (error.message || error));

@@ -21,6 +21,7 @@ import AuthWrapper from '../src/config/AuthWrapper';
 import ForgotPassword from '../src/Pages/auth/ForgotPassward';
 import ResetPassword from '../src/Pages/auth/ResetPassword';
 import OrderConfirmationPage from  '../src/Pages/customer/OrderConfirmationPage'
+import QRGeneratorPage from '../src/Pages/QR';
 import { OrderProvider } from './context/OrderContext';
 import { AuthProvider } from './config/AuthContext';
 import OrderTracking from '../src/Pages/customer/OrderTracking';
@@ -82,6 +83,7 @@ const App = () => {
                   </AuthWrapper>
                 }
               />
+              <Route path="/qr" element={<QRGeneratorPage />} />
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </OrderProvider>

@@ -16,13 +16,8 @@
 .env.development.local
 .env.test.local
 .env.production.local
-.env
 
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Firebase service account keys
-firebase-service-account.json
-table-tap-e7267-firebase-adminsdk-fbsvc-43724f202a.json
-*.json

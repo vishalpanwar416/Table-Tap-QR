@@ -74,33 +74,36 @@ const PaymentPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Get user
-        const { data: { user } } = await supabase.auth.getUser();
+        const user = (await supabase.auth.getUser()).data.user;
         setUser(user);
-        
-        // Get first restaurant from database
-        const { data: restaurants, error } = await supabase
+  
+        // Get restaurant ID from URL
+        const params = new URLSearchParams(location.search);
+        const restaurantSlug = params.get('restaurant');
+        const restaurantId = restaurantSlug?.split('-').pop();
+  
+        // Get restaurant data
+        const { data: restaurant, error } = await supabase
           .from('restaurants')
           .select('*')
-          .limit(1)
+          .eq('id', restaurantId)
           .single();
-          
-        if (error) {
-          console.error('Error fetching restaurant:', error);
-          throw error;
+  
+        if (restaurant) {
+          setRestaurant(restaurant);
+        } else {
+          setScriptError('Restaurant not found');
         }
-        
-        setRestaurant(restaurants);
       } catch (error) {
         console.error('Error fetching data:', error);
-        setScriptError('Failed to load necessary data');
+        setScriptError('Failed to load restaurant data');
       }
     };
-    
+  
     fetchData();
     setIsMounted(true);
     return () => setIsMounted(false);
-  }, []);
+  }, [location.search]);
 
   // Generate order_number
   const generateOrderNumber = () => {
@@ -150,8 +153,8 @@ const PaymentPage = () => {
         amount: Math.round(total * 100),
         currency: 'INR',
         name: restaurant?.name || 'Restaurant',
-        description: 'Order Payment',
-        image: '/logo.png',
+        description: `Order at ${restaurant?.name}`,
+        image: restaurant?.logo_url || '/logo.png',
         handler: async (response) => {
           await processOrder(response);
         },

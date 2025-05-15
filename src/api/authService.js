@@ -176,11 +176,11 @@ completePasswordReset: async (newPassword) => {
 
   /**
    * Sign up with Google
-   * @param {string} [redirectTo='/complete-profile'] - Redirect URL after auth
+   * @param {string} [redirectTo='/home'] - Redirect URL after auth
    * @returns {Promise<Object>} Auth data
    * @throws {Error} If Google signup fails
    */
-  signUpWithGoogle: async (redirectTo = '/complete-profile') => {
+  signUpWithGoogle: async (redirectTo = '/home') => {
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',

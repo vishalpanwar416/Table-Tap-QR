@@ -43,12 +43,13 @@ export const getUserOrders = async (userId) => {
 
 // Update order status
 export const updateOrderStatus = async (orderId, status) => {
-  // Update the allowed statuses to match your database schema and include 'ready'
-  // const allowedStatuses = ['pending', 'confirmed', 'preparing', 'ready', 'delivered', 'cancelled', 'rejected', 'completed'];
+  // Define allowed statuses
+  const allowedStatuses = ['pending', 'confirmed', 'preparing', 'ready', 'delivered', 'cancelled', 'rejected', 'completed'];
 
-  // if (!allowedStatuses.includes(status)) {
-  //   throw new Error(`Invalid status: ${status}`);
-  // }
+  if (!allowedStatuses.includes(status)) {
+    console.error(`Invalid status: ${status}`);
+    return Promise.reject(new Error(`Invalid status: ${status}`));
+  }
 
   try {
     const { data, error } = await supabase
@@ -58,13 +59,19 @@ export const updateOrderStatus = async (orderId, status) => {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Database error updating order status:', error);
+      throw error;
+    }
+    
+    console.log(`Order ${orderId} status updated to ${status} successfully`);
     return data;
   } catch (error) {
     console.error('Error updating order status:', error);
     throw error;
   }
 };
+
 
 
 // Get order by ID

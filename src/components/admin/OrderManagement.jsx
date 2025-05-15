@@ -29,15 +29,21 @@ const OrderManagement = ({ orders, updateOrderStatus }) => {
   
   const handleRejectOrder = async (orderId, userId) => {
     try {
-      await updateOrderStatus(orderId, 'rejected');
-      
-      await createNotification({
-        orderId,
-        type: 'order_rejected',
-        userId,
-        message: `Order #${orderId.slice(0,8)} was rejected`
-      });
-      
+      // Directly call updateOrderStatus instead of awaiting the result
+      // in case there's an issue with the promise chain
+      updateOrderStatus(orderId, 'rejected')
+        .then(() => {
+          // Only create notification when order update succeeds
+          return createNotification({
+            orderId,
+            type: 'order_rejected',
+            userId,
+            message: `Order #${orderId.slice(0,8)} was rejected`
+          });
+        })
+        .catch(err => {
+          console.error('Error in order rejection flow:', err);
+        });
     } catch (error) {
       console.error('Error rejecting order:', error);
     }
@@ -352,7 +358,7 @@ const OrderManagement = ({ orders, updateOrderStatus }) => {
                         )}
                        {order.status === 'preparing' && (
                           <button
-                            onClick={() => updateOrderStatus(order.id, 'ready')}
+                            onClick={() => handleCompleteOrder(order.id, order.userId)}
                             className="px-4 py-2 rounded-lg bg-green-100 text-green-600 hover:bg-green-200 flex items-center"
                           >
                             <CheckCircle size={16} className="mr-1" /> Ready
