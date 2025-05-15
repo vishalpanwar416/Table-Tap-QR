@@ -2,7 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 import Opening from '../src/Pages/shared/opening';
-import Homepage from '../src/Pages/customer/HomePaget';
+import Homepage from '../src/Pages/HomePage/Homepage';
 import BestSellerPage from '../src/Pages/customer/BestSellerPage';
 import LoginPage from '../src/Pages/auth/LoginPage';
 import { CartProvider } from '../src/components/customer/CartContent';

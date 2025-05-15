@@ -20,10 +20,7 @@
     "lottie-react": "^2.4.1",
     "lottie-web": "^5.12.2",
     "lucide-react": "^0.200.0",
-<<<<<<< HEAD
     "qrcode.react": "^4.2.0",
-=======
->>>>>>> 059edf4feec5fbad43cd3100aacadbe61bfffce7
     "react": "^18.2.0",
     "react-alice-carousel": "^2.9.1",
     "react-dom": "^18.2.0",
