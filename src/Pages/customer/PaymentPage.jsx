@@ -13,9 +13,15 @@ const PaymentPage = () => {
   const [scriptError, setScriptError] = useState(null);
   const [isMounted, setIsMounted] = useState(false);
   const [user, setUser] = useState(null);
-  const [restaurant, setRestaurant] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('razorpay');
+
+  // Hardcoded restaurant details
+  const restaurant = {
+    id: "1",
+    name: "Our Restaurant",
+    logo_url: "/logo.png"
+  };
 
   // Calculate total with GST
   const calculateTotal = () => {
@@ -70,40 +76,22 @@ const PaymentPage = () => {
     loadRazorpay();
   }, []);
 
-  // Get current user and restaurant
+  // Get current user
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchUser = async () => {
       try {
         const user = (await supabase.auth.getUser()).data.user;
         setUser(user);
-  
-        // Get restaurant ID from URL
-        const params = new URLSearchParams(location.search);
-        const restaurantSlug = params.get('restaurant');
-        const restaurantId = restaurantSlug?.split('-').pop();
-  
-        // Get restaurant data
-        const { data: restaurant, error } = await supabase
-          .from('restaurants')
-          .select('*')
-          .eq('id', restaurantId)
-          .single();
-  
-        if (restaurant) {
-          setRestaurant(restaurant);
-        } else {
-          setScriptError('Restaurant not found');
-        }
       } catch (error) {
-        console.error('Error fetching data:', error);
-        setScriptError('Failed to load restaurant data');
+        console.error('Error fetching user data:', error);
+        setScriptError('Failed to load user data');
       }
     };
   
-    fetchData();
+    fetchUser();
     setIsMounted(true);
     return () => setIsMounted(false);
-  }, [location.search]);
+  }, []);
 
   // Generate order_number
   const generateOrderNumber = () => {
@@ -115,9 +103,9 @@ const PaymentPage = () => {
     navigate(-1);
   };
 
-  // Handle Razorpay payment
+  // Handle Razorpay payment with better error handling
   const handlePayment = async () => {
-    if (!isMounted || cartItems.length === 0 || !restaurant) {
+    if (!isMounted || cartItems.length === 0) {
       setScriptError('Unable to process payment at this time');
       return;
     }
@@ -137,24 +125,26 @@ const PaymentPage = () => {
       
       // Otherwise use Razorpay
       if (!scriptLoaded || !window.Razorpay) {
-        setScriptError('Payment processor not loaded');
+        setScriptError('Payment processor not loaded. Please try again or choose Pay At Restaurant.');
         setIsProcessing(false);
         return;
       }
 
-      if (!process.env.REACT_APP_RAZORPAY_KEY_ID) {
-        setScriptError('Payment processor not configured');
-        setIsProcessing(false);
-        return;
+      // Use environment variable or fallback to a placeholder key
+      // IMPORTANT: In production, always use environment variables
+      const razorpayKeyId = process.env.REACT_APP_RAZORPAY_KEY_ID || 'rzp_test_placeholder';
+      
+      if (razorpayKeyId === 'rzp_test_placeholder') {
+        console.warn('Using placeholder Razorpay key. For production, set REACT_APP_RAZORPAY_KEY_ID in your environment.');
       }
 
       const options = {
-        key: process.env.REACT_APP_RAZORPAY_KEY_ID,
+        key: razorpayKeyId,
         amount: Math.round(total * 100),
         currency: 'INR',
-        name: restaurant?.name || 'Restaurant',
-        description: `Order at ${restaurant?.name}`,
-        image: restaurant?.logo_url || '/logo.png',
+        name: restaurant.name,
+        description: `Order at ${restaurant.name}`,
+        image: restaurant.logo_url,
         handler: async (response) => {
           await processOrder(response);
         },
@@ -186,7 +176,7 @@ const PaymentPage = () => {
     }
   };
   
-  // Process the order
+  // Process the order with better error handling
   const processOrder = async (response) => {
     try {
       // Get current user information
@@ -199,14 +189,12 @@ const PaymentPage = () => {
         confirmed: { status: true, timestamp: new Date().toISOString() },
         preparing: { status: false, timestamp: null },
         ready: { status: false, timestamp: null },
-        delivered: { status: false, timestamp: null }
+        completed: { status: false, timestamp: null }
       };
       
       // Create order data object matching the database schema
       const orderData = {
-        order_number: generateOrderNumber(),
         user_id: user?.id,
-        restaurant_id: restaurant?.id, // Use the fetched restaurant's ID
         table_number: tableNumber || 'N/A',
         items: cartItems,
         subtotal: parseFloat(subtotal),
@@ -223,10 +211,11 @@ const PaymentPage = () => {
         tracking: tracking,
         customer_name: customer_name,
         customer_email: customer_email,
-        customer_phone: customer_phone
+        customer_phone: customer_phone,
+        special_instructions: ''
       };
 
-      // Save order to Supabase
+      // Save order to Supabase with better error handling
       const { data: order, error } = await supabase
         .from('orders')
         .insert([orderData])
@@ -235,9 +224,12 @@ const PaymentPage = () => {
 
       if (error) {
         console.error('Order creation error:', error);
-        throw error;
+        setScriptError(`Order creation failed: ${error.message || 'Database error'}`);
+        setIsProcessing(false);
+        return;
       }
 
+      // Clear cart and navigate to success page
       clearCart();
       navigate('/order-success', {
         state: {
@@ -253,14 +245,6 @@ const PaymentPage = () => {
       setIsProcessing(false);
     }
   };
-
-  if (!restaurant) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white text-xl">Loading payment details...</div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">

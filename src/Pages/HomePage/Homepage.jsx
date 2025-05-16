@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ArrowRight } from 'lucide-react';
 import Maincarosel from '../../components/customer/Maincarosel';
 import { MenuDropdown, Divider } from '../../components/customer/MenuDropdown';
@@ -14,7 +14,7 @@ import { useCart } from '../../components/customer/CartContent';
 import LogoutPopup from '../../components/auth/LogoutPopup';
 import DynamicGreeting from '../../components/customer/Greetings';
 import LikedItems from '../../components/customer/LikedItems';
-import { allFoodItems } from '../../components/foodData';
+import { fetchFoodItems } from '../../components/foodData';
 
 
 const pageVariants = {
@@ -49,6 +49,21 @@ export default function HomePage() {
   const { addToCart, cartItems, removeItem, updateQuantity } = useCart();
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
   const scrollRef = useRef(null);
+  const [allFoodItems, setAllFoodItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      const data = await fetchFoodItems();
+      setAllFoodItems(data);
+      setLoading(false);
+    };
+    loadData();
+  }, []);
+
+  if (loading) {
+    return <div className="text-white text-center p-4">Loading menu...</div>;
+  }
   const bestSellerItems = allFoodItems.filter(item => 
     item.tags?.some(tag => tag.toLowerCase() === 'bestseller')
   );

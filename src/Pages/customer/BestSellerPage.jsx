@@ -1,4 +1,5 @@
-import React, { useState, useRef } from 'react';
+
+import React, { useState, useRef, useEffect } from 'react';
 import { Heart, ShoppingBag, ArrowLeft } from 'lucide-react';
 import Header from '../../components/customer/Header';
 import Sidebar from '../../components/customer/Slidebar';
@@ -7,13 +8,9 @@ import NotificationSidebar from '../../components/customer/NotificationSlidebar'
 import { profileImg } from '../../assets/images/Food/Index';
 import { useCart } from '../../components/customer/CartContent';
 import { useNavigate } from 'react-router-dom';
-import { allFoodItems } from '../../components/foodData';
 import { useLikes } from '../../components/customer/LikesContent';
 import LogoutPopup from '../../components/auth/LogoutPopup';
-
-const bestSellerItems = allFoodItems.filter(item => 
-  item.tags?.some(tag => tag.toLowerCase() === 'bestseller')
-);
+import { fetchFoodItems } from '../../components/foodData';
 
 const BestSellerItem = ({ image, name, price, description, item }) => {
   const { toggleLike, likedItems } = useLikes();
@@ -29,7 +26,6 @@ const BestSellerItem = ({ image, name, price, description, item }) => {
       updateQuantity(item.id, item.category, quantity - 1);
     }
   };
-
   return (
     <div className="relative h-full flex flex-col group hover:shadow-lg transition-shadow">
       <div className="relative rounded-xl overflow-hidden mb-2 flex-1 aspect-square">
@@ -89,6 +85,8 @@ const BestSellerItem = ({ image, name, price, description, item }) => {
 };
 
 const BestSellerPage = () => {
+  const [bestSellerItems, setBestSellerItems] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
@@ -98,12 +96,27 @@ const BestSellerPage = () => {
   const navigate = useNavigate();
   const containerRef = useRef(null);
 
+  useEffect(() => {
+    const loadData = async () => {
+      const data = await fetchFoodItems();
+      setBestSellerItems(data.filter(item => 
+        item.tags?.some(tag => tag.toLowerCase() === 'bestseller')
+      ));
+      setLoading(false);
+    };
+    loadData();
+  }, []);
+
   const toggle = {
     sidebar: () => setIsSidebarOpen(!isSidebarOpen),
     cart: () => setIsCartOpen(!isCartOpen),
     search: () => setIsSearchActive(!isSearchActive),
     notification: () => setIsNotificationOpen(!isNotificationOpen),
   };
+
+  if (loading) {
+    return <div className="text-white text-center p-4">Loading best sellers...</div>;
+  }
 
   return (
     <div className="flex justify-center items-start min-h-screen bg-black p-4">

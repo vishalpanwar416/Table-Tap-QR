@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Edit, Trash2, Plus, X, ChevronUp, ChevronDown, Search } from 'lucide-react';
+import { Edit, Trash2, Plus, X, ChevronUp, ChevronDown, Search, Tag } from 'lucide-react';
 import { categories } from '../foodData';
 import { createFoodItem, updateFoodItem, deleteFoodItem, uploadFoodImage } from '../../api/foodService';
 
@@ -9,6 +9,8 @@ const MenuManagement = ({ foodItems, fetchFoodItems, setLoading, setErrorMsg, se
     price: '',
     description: '',
     category: 'Snacks',
+    discounttype: '',
+    discountvalue: '',
     tags: '',
     image: '',
     imageFile: null
@@ -59,10 +61,11 @@ const MenuManagement = ({ foodItems, fetchFoodItems, setLoading, setErrorMsg, se
       }
   
       // Prepare the data for Supabase
-      const { imageFile, tags, price, ...rest } = formData;
+      const { imageFile, tags, price, discountvalue, ...rest } = formData;
       const foodItemData = {
         ...rest,
         price: parseFloat(price),
+        discountvalue: discountvalue ? parseFloat(discountvalue) : null,
         tags: tags.split(',').map(tag => tag.trim()).filter(tag => tag),
         image: imageUrl
       };
@@ -70,7 +73,7 @@ const MenuManagement = ({ foodItems, fetchFoodItems, setLoading, setErrorMsg, se
   
       // Remove any undefined or null values that might cause issues
       Object.keys(foodItemData).forEach(key => {
-        if (foodItemData[key] === undefined || foodItemData[key] === null) {
+        if (foodItemData[key] === undefined || foodItemData[key] === '') {
           delete foodItemData[key];
         }
       });
@@ -99,6 +102,8 @@ const MenuManagement = ({ foodItems, fetchFoodItems, setLoading, setErrorMsg, se
       price: '',
       description: '',
       category: 'Snacks',
+      discounttype: '',
+      discountvalue: '',
       tags: '',
       image: '',
       imageFile: null
@@ -111,6 +116,7 @@ const MenuManagement = ({ foodItems, fetchFoodItems, setLoading, setErrorMsg, se
     setFormData({
       ...item,
       price: item.price.toString(),
+      discountvalue: item.discountvalue ? item.discountvalue.toString() : '',
       tags: item.tags?.join(', ') || '',
       imageFile: null
     });
@@ -146,6 +152,21 @@ const MenuManagement = ({ foodItems, fetchFoodItems, setLoading, setErrorMsg, se
     
     return matchesSearch && matchesCategory;
   });
+
+  // Calculate discounted price
+  const calculateDiscountedPrice = (price, discountType, discountValue) => {
+    if (!discountType || !discountValue) return price;
+    
+    if (discountType === 'Percentage') {
+      return price - (price * (discountValue / 100));
+    } else if (discountType === 'Fixed') {
+      return Math.max(0, price - discountValue);
+    }
+    return price;
+  };
+
+  // Discount type options
+  const discountTypes = ['Percentage', 'Fixed'];
 
   return (
     <div className="space-y-6">
@@ -231,6 +252,39 @@ const MenuManagement = ({ foodItems, fetchFoodItems, setLoading, setErrorMsg, se
                   </option>
                 ))}
               </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Discount Type</label>
+                <select
+                  name="discounttype"
+                  value={formData.discounttype || ''}
+                  onChange={handleInputChange}
+                  className="w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                >
+                  <option value="">No Discount</option>
+                  {discountTypes.map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {formData.discounttype === 'Percentage' ? 'Discount (%)' : formData.discounttype === 'Fixed' ? 'Discount (₹)' : 'Discount Value'}
+                </label>
+                <input
+                  type="number"
+                  name="discountvalue"
+                  value={formData.discountvalue}
+                  onChange={handleInputChange}
+                  className="w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  placeholder="0"
+                  min="0"
+                  step={formData.discounttype === 'Percentage' ? '0.1' : '0.01'}
+                  disabled={!formData.discounttype}
+                />
+              </div>
             </div>
 
             <div>
@@ -319,66 +373,93 @@ const MenuManagement = ({ foodItems, fetchFoodItems, setLoading, setErrorMsg, se
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {filteredFoodItems.map(item => (
-                  <div key={item.id} className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                    <div className="flex">
-                      <div className="w-24 h-24 bg-gray-100">
-                        {item.image ? (
-                          <img 
-                            src={item.image} 
-                            alt={item.name} 
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-400">
-                            No image
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1 p-3">
-                        <div className="flex justify-between">
-                          <h3 className="font-medium text-gray-800 truncate">{item.name}</h3>
-                          <span className="text-orange-500 font-semibold">₹{item.price.toFixed(2)}</span>
+                {filteredFoodItems.map(item => {
+                  const discountedPrice = calculateDiscountedPrice(
+                    item.price,
+                    item.discounttype,
+                    item.discountvalue
+                  );
+                  
+                  return (
+                    <div key={item.id} className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+                      <div className="flex">
+                        <div className="w-24 h-24 bg-gray-100">
+                          {item.image ? (
+                            <img 
+                              src={item.image} 
+                              alt={item.name} 
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                              No image
+                            </div>
+                          )}
                         </div>
-                        <p className="text-sm text-gray-600 line-clamp-2 mt-1">{item.description}</p>
-                        <div className="flex justify-between items-center mt-2">
-                          <div>
-                            <span className="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
-                              {item.category}
-                            </span>
-                            {item.tags && item.tags.length > 0 && (
-                              <div className="flex gap-1 mt-1 flex-wrap">
-                                {item.tags.slice(0, 2).map((tag, idx) => (
-                                  <span key={idx} className="bg-orange-100 text-orange-800 text-xs px-1.5 py-0.5 rounded">
-                                    {tag}
-                                  </span>
-                                ))}
-                                {item.tags.length > 2 && (
-                                  <span className="text-xs text-gray-500">+{item.tags.length - 2} more</span>
-                                )}
-                              </div>
-                            )}
+                        <div className="flex-1 p-3">
+                          <div className="flex justify-between items-start">
+                            <h3 className="font-medium text-gray-800 truncate">{item.name}</h3>
+                            <div className="text-right">
+                              {item.discounttype && item.discountvalue ? (
+                                <div>
+                                  <span className="text-gray-400 text-xs line-through mr-1">₹{item.price.toFixed(2)}</span>
+                                  <span className="text-orange-500 font-semibold">₹{discountedPrice.toFixed(2)}</span>
+                                </div>
+                              ) : (
+                                <span className="text-orange-500 font-semibold">₹{item.price.toFixed(2)}</span>
+                              )}
+                              
+                              {item.discounttype && item.discountvalue > 0 && (
+                                <div className="flex items-center text-xs text-green-600 mt-1">
+                                  <Tag size={12} className="mr-1" />
+                                  {item.discounttype === 'Percentage' 
+                                    ? `${item.discountvalue}% off` 
+                                    : `₹${item.discountvalue} off`
+                                  }
+                                </div>
+                              )}
+                            </div>
                           </div>
-                          
-                          <div className="flex space-x-1">
-                            <button 
-                              onClick={() => handleEdit(item)}
-                              className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                            >
-                              <Edit size={16} />
-                            </button>
-                            <button 
-                              onClick={() => handleDelete(item.id)}
-                              className="p-1 text-red-600 hover:bg-red-50 rounded"
-                            >
-                              <Trash2 size={16} />
-                            </button>
+                          <p className="text-sm text-gray-600 line-clamp-2 mt-1">{item.description}</p>
+                          <div className="flex justify-between items-center mt-2">
+                            <div>
+                              <span className="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
+                                {item.category}
+                              </span>
+                              {item.tags && item.tags.length > 0 && (
+                                <div className="flex gap-1 mt-1 flex-wrap">
+                                  {item.tags.slice(0, 2).map((tag, idx) => (
+                                    <span key={idx} className="bg-orange-100 text-orange-800 text-xs px-1.5 py-0.5 rounded">
+                                      {tag}
+                                    </span>
+                                  ))}
+                                  {item.tags.length > 2 && (
+                                    <span className="text-xs text-gray-500">+{item.tags.length - 2} more</span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                            
+                            <div className="flex space-x-1">
+                              <button 
+                                onClick={() => handleEdit(item)}
+                                className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                              >
+                                <Edit size={16} />
+                              </button>
+                              <button 
+                                onClick={() => handleDelete(item.id)}
+                                className="p-1 text-red-600 hover:bg-red-50 rounded"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
